@@ -6,32 +6,79 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 contract LotteryGame is ERC721Enumerable {
     address public owner;
     uint256 public ticketPrice = 0.01 ether;
-    uint256 public drawTime;
     bool public drawn = false;
+    uint256 public gameRound = 1;
+    mapping(address => uint256) public lastParticipatedRound;
+    mapping(uint256 => uint256) public ticketToGameRound;
+    address public lastWinner;
+    uint256 public lastWinnerTicket;
+    uint256 public lastWinnerPrize;
 
     constructor() ERC721("LotteryTicket", "LTK") {
         owner = msg.sender;
-        drawTime = block.timestamp + 1 days; // Adjusted .add to +
     }
 
     function buyTicket() external payable {
         require(msg.value == ticketPrice, "Incorrect Ether sent");
-        require(block.timestamp < drawTime, "Draw time passed");
+        require(
+            lastParticipatedRound[msg.sender] < gameRound,
+            "You can only buy one ticket per round"
+        );
 
         uint256 ticketId = totalSupply() + 1; // Adjusted .add to +
+        ticketToGameRound[ticketId] = gameRound;
         _mint(msg.sender, ticketId);
+
+        lastParticipatedRound[msg.sender] = gameRound;
     }
 
     function drawWinner() external {
         require(msg.sender == owner, "Only owner can draw");
-        require(block.timestamp >= drawTime, "Too early to draw");
         require(!drawn, "Already drawn");
 
-        uint256 winnerTicket = random() % totalSupply();
+        uint256 winnerTicket = (random() % totalSupply()) + 1;
         address winner = ownerOf(winnerTicket);
-        payable(winner).transfer(address(this).balance);
+        lastWinner = winner;
+        lastWinnerTicket = winnerTicket;
+
+        uint256 prizeForWinner = (address(this).balance * 90) / 100; // 90% for the winner
+        uint256 prizeForOwner = address(this).balance - prizeForWinner; // 10% for the owner
+
+        lastWinnerPrize = prizeForWinner;
+
+        payable(winner).transfer(prizeForWinner); // Transfer 90% of the balance to the winner
+        payable(owner).transfer(prizeForOwner); // Transfer 10% of the balance to the owner
 
         drawn = true;
+    }
+
+    function reopenLottery() external {
+        require(msg.sender == owner, "Only owner can reopen");
+        require(drawn == true, "Lottery is not drawn yet");
+
+        gameRound++;
+        drawn = false;
+    }
+
+    function getCurrentPoolBalance() external view returns (uint256) {
+        return address(this).balance;
+    }
+
+    function getCurrentRoundTicket(address user)
+        external
+        view
+        returns (uint256)
+    {
+        uint256 tokenCount = balanceOf(user);
+
+        for (uint256 i = 0; i < tokenCount; i++) {
+            uint256 tokenId = tokenOfOwnerByIndex(user, i);
+            if (ticketToGameRound[tokenId] == gameRound) {
+                return tokenId;
+            }
+        }
+
+        revert("No ticket found for this round");
     }
 
     function random() private view returns (uint256) {
@@ -39,11 +86,24 @@ contract LotteryGame is ERC721Enumerable {
             uint256(
                 keccak256(
                     abi.encodePacked(
-                        blockhash(block.number - 1),
+                        block.prevrandao,
                         block.timestamp,
+                        msg.sender,
                         totalSupply()
                     )
                 )
             );
+    }
+
+    function getWinner() external view returns (address) {
+        return lastWinner;
+    }
+
+    function getWinnerTicket() external view returns (uint256) {
+        return lastWinnerTicket;
+    }
+
+    function getWinnerPrize() external view returns (uint256) {
+        return lastWinnerPrize;
     }
 }
