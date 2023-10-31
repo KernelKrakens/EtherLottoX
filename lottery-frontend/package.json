@@ -1,5 +1,6 @@
 {
   "name": "lottery-frontend",
+  "homepage": "https://KernelKrakens.github.io/EtherLottoX",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
