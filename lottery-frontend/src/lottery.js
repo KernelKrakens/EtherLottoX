@@ -1,6 +1,6 @@
 import web3 from "./web3";
 
-const address = "0x3D0D5595CBeFE59bB953Ca9d79b271D7B85aeC88";
+const address = "0xfe4e1A5e82B87a98F29a2842bA718555befa30Af";
 const abi = [
   {
     inputs: [

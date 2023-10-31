@@ -21,7 +21,8 @@ function App() {
   async function checkNetwork() {
     const networkIdBigInt = await web3.eth.getChainId();
     const networkId = Number(networkIdBigInt);
-    const expectedNetworkId = 1337; // Ganache default
+    console.log(networkId)
+    const expectedNetworkId = 5; // Ganache default
     if (networkId !== expectedNetworkId) {
       setNetworkCorrect(false);
       return false;
