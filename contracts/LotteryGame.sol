@@ -10,6 +10,7 @@ contract LotteryGame is ERC721Enumerable {
     uint256 public gameRound = 1;
     mapping(address => uint256) public lastParticipatedRound;
     mapping(uint256 => uint256) public ticketToGameRound;
+    mapping(uint256 => uint256[]) public gameRoundToTickets;
     address public lastWinner;
     uint256 public lastWinnerTicket;
     uint256 public lastWinnerPrize;
@@ -19,6 +20,7 @@ contract LotteryGame is ERC721Enumerable {
     }
 
     function buyTicket() external payable {
+        require(!drawn, "Lottery is drawn");
         require(msg.value == ticketPrice, "Incorrect Ether sent");
         require(
             lastParticipatedRound[msg.sender] < gameRound,
@@ -27,6 +29,7 @@ contract LotteryGame is ERC721Enumerable {
 
         uint256 ticketId = totalSupply() + 1; // Adjusted .add to +
         ticketToGameRound[ticketId] = gameRound;
+        gameRoundToTickets[gameRound].push(ticketId);
         _mint(msg.sender, ticketId);
 
         lastParticipatedRound[msg.sender] = gameRound;
@@ -35,8 +38,14 @@ contract LotteryGame is ERC721Enumerable {
     function drawWinner() external {
         require(msg.sender == owner, "Only owner can draw");
         require(!drawn, "Already drawn");
+        uint256[] memory ticketsForCurrentRound = gameRoundToTickets[gameRound];
+        require(
+            ticketsForCurrentRound.length > 0,
+            "No tickets for current round"
+        );
 
-        uint256 winnerTicket = (random() % totalSupply()) + 1;
+        uint256 randomIndex = random() % ticketsForCurrentRound.length;
+        uint256 winnerTicket = ticketsForCurrentRound[randomIndex];
         address winner = ownerOf(winnerTicket);
         lastWinner = winner;
         lastWinnerTicket = winnerTicket;
