@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/EtherLottoX/static/css/main.e6c13ad2.css",
+    "main.js": "/EtherLottoX/static/js/main.05e9e7b5.js",
+    "static/js/329.1994bb29.chunk.js": "/EtherLottoX/static/js/329.1994bb29.chunk.js",
+    "index.html": "/EtherLottoX/index.html",
+    "main.e6c13ad2.css.map": "/EtherLottoX/static/css/main.e6c13ad2.css.map",
+    "main.05e9e7b5.js.map": "/EtherLottoX/static/js/main.05e9e7b5.js.map",
+    "329.1994bb29.chunk.js.map": "/EtherLottoX/static/js/329.1994bb29.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.e6c13ad2.css",
+    "static/js/main.05e9e7b5.js"
+  ]
+}
